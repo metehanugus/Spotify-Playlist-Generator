@@ -3,9 +3,17 @@ import openai
 from dotenv import dotenv_values
 import pprint
 import json
+import argparse
+
 
 config = dotenv_values("D:\GPTProjects\.env")
 openai.api_key = config["OPENAI_API_KEY"]
+
+parser = argparse.ArgumentParser(description="Simple command line song utility")
+parser.add_argument("-p", type=str, default="songs that chatgpt api suggest", help="The prompt to describe the playlist")
+parser.add_argument("-n", type=int, default=15, help="The number of songs you want in the playlist")
+args = parser.parse_args()
+
 
 def get_playlist(prompt, count=15):
     example_json = """
@@ -36,7 +44,7 @@ def get_playlist(prompt, count=15):
     playlist = json.loads(response["choices"][0]["message"]["content"])
     return playlist
 
-playlist = get_playlist("epic songs", 4)
+playlist = get_playlist(args.p, args.n)
 print(playlist)
 
 sp = spotipy.Spotify(
@@ -64,7 +72,7 @@ for item in playlist:
 created_playlist = sp.user_playlist_create(
     current_user["id"],
     public=False,
-    name="Testing Playlist Fun!"
+    name=args.p
 )
 
 sp.user_playlist_add_tracks(current_user["id"],created_playlist["id"], track_ids)
